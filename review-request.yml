@@ -1,0 +1,63 @@
+---
+- hosts: all
+  vars:
+    ranger_bug_id : "RANGER-XYZ"
+    ranger_bug_commit_msg : ""
+    file_review : True
+    test_compile : False
+    target_people : "bosco, kulkabhay, madhan.neethiraj, rmani, sneethiraj, vperiasamy"
+    commit_message :  '{{ ranger_bug_id }}. {{ ranger_bug_commit_msg }}'
+    ranger_branch: master
+    java_home : /Library/Java/JavaVirtualMachines/jdk1.7.0_40.jdk/Contents/Home/
+    src_dir: /Users/gautam/work/Code/repos/apache/auto-wf-ranger/ranger-ansible-patch
+    ranger_repo: https://github.com/apache/incubator-ranger.git
+    patches_dir: "{{src_dir}}/../patches/"
+
+  tasks:
+    - name: Checkout repo
+      git: repo={{ranger_repo}}
+           dest={{src_dir}}
+           version={{ranger_branch}}
+
+    - name: git clean the dir
+      shell:  git reset --hard && git clean -xdf && git checkout master && git pull --rebase chdir={{src_dir}}
+
+    - name: Check if any patch needs to be applied
+      shell: find {{patches_dir}} -name '*' -type f | wc -l | tr -d '[[:space:]]'
+      register: patches_available
+
+    - name: Apply patches
+      shell: for i in {{patches_dir}}/*; do git apply --ignore-space-change $i; done chdir={{ src_dir }}
+      when : not patches_available.stdout == "0"
+
+    - name: compile source
+      shell: mvn clean compile package assembly:assembly chdir={{ src_dir }}
+      environment:
+         JAVA_HOME: "{{ java_home }}"
+      when : test_compile == True
+
+    - name: add the files
+      shell: git add . chdir={{ src_dir }}
+
+    - name: commit the changes
+      shell: git commit -a -m '{{ commit_message }}' chdir={{ src_dir }}
+
+    - name: format patch
+      shell: git format-patch --full-index HEAD~1 --stdout > '../final_patches/{{ ranger_bug_id }}.patch' chdir={{ src_dir }} 
+      register: patch_output
+      
+    #- name: get Desc
+    #  shell: jira-cli --v2 view "{{ ranger_bug_id }}" --format="%description"
+    #  register: jira_desc
+
+    #- debug: var=jira_desc 
+
+    - name : Create reviewboardrc
+      shell: cp {{src_dir}}/../reviewboardrc {{ src_dir }}
+
+    - name: file review
+      shell: rbt post --open -g --target-people='{{ target_people }}' --diff-filename='../final_patches/{{ ranger_bug_id }}.patch' --summary='{{ commit_message }}' --bugs-closed='{{ ranger_bug_id }}' 
+      register: review_request_op
+      when : file_review == True
+
+    - debug: var=review_request_op 

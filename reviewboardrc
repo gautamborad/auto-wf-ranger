@@ -1,0 +1,4 @@
+REVIEWBOARD_URL = "https://reviews.apache.org/"
+REPOSITORY = "ranger"
+BRANCH = "master"
+LAND_DEST_BRANCH = "master"
