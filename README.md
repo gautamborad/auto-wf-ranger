@@ -28,22 +28,23 @@ Auto workflow for creating Ranger RR
     
 
 ## Process to create RR
-* cd ~/work/auto-wf-ranger
-* copy the patch file under the patches/ dir. Note: If there are multiple files, all of them will be applied and a single final patch file will be created
-* check that you are logged in to 'rbt login'
-* modify variables in the 'vars' section of review-request.yml. 
-       Important vars to modify:
-          - ranger_bug_id : The id of the bug. Eg : RANGER-1001
-          - ranger_bug_commit_msg: The commit message to give. 
-          - file_review : True/False. Whether to file review or not
-          - test_compile: True/False. Whether to compile with the patch before filing for review
-          - ranger_branch: The branch name against which to file review
-      One time vars to modify:
-          - src_dir: The absolute path to ranger source dir (git pull etc will be done here)
-          - ranger_repo: The git repo url
-          - patches_dir: The input dir from which patches will be read. By default "patches"
+* `cd ~/work/auto-wf-ranger`
+* copy the patch file under the `patches/` dir. Note: If there are multiple files, all of them will be applied and a single final patch file will be created
+* check that you are logged in to `'rbt login'`
+* modify variables in the `vars` section of `review-request.yml` 
+
+  * Important vars to modify:
+      * `ranger_bug_id` : The id of the bug. Eg : RANGER-1001
+      * `ranger_bug_commit_msg` : The commit message to give. 
+      * `file_review` : True/False. Whether to file review or not
+      * `test_compile` : True/False. Whether to compile with the patch before filing for review
+      * `ranger_branch` : The branch name against which to file review
+  * One time vars to modify:
+      * `src_dir` : The absolute path to ranger source dir (git pull etc will be done here)
+      * `ranger_repo` : The git repo url
+      * `patches_dir` : The input dir from which patches will be read. By default "patches"
     
 * Run the playbook
-    $ bash file_review.sh 
+    `$ bash file_review.sh` 
 
 
